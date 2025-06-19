@@ -1,2 +1,8 @@
 spring-quiz:
-  title: "\"Тест по Spring Framework\""
+  title: "Тест по Spring Framework"
+  report:
+    enabled: true
+    mode: "verbose"
+    output:
+      mode: "console"
+      path: "./quiz-result.txt"

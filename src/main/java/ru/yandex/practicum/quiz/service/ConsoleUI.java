@@ -1,7 +1,8 @@
 package ru.yandex.practicum.quiz.service;
 
-import org.springframework.beans.factory.annotation.Value;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.quiz.config.AppConfig;
 import ru.yandex.practicum.quiz.config.QuizConfig;
 import ru.yandex.practicum.quiz.model.Question;
 import ru.yandex.practicum.quiz.model.QuizLog;
@@ -10,26 +11,24 @@ import java.util.List;
 import java.util.Scanner;
 
 @Component
+@RequiredArgsConstructor
 public class ConsoleUI {
-    private final Scanner input;
-    private final QuizLog quizLogger;
+    private final Scanner input = new Scanner(System.in);
+    private final QuizLog quizLogger = new QuizLog(20); // Достаточно большой размер
     private final List<Question> questions;
-    private final String quizTitle;
+    private final AppConfig appConfig;
 
-    public ConsoleUI(@Value("${spring-quiz.title:\"Неназванный тест\"}") String title,
-        QuizConfig quizConfig) {
+    public ConsoleUI(AppConfig appConfig, QuizConfig quizConfig) {
+        this.appConfig = appConfig;
         this.questions = quizConfig.getQuestions();
-        this.input = new Scanner(System.in);
-        this.quizLogger = new QuizLog(questions.size());
-        this.quizTitle = title;
     }
 
     public QuizLog startQuiz() {
-        System.out.println("\nЗдравствуйте, приступаем к тесту " + quizTitle + "\n");
+        System.out.println("\nЗдравствуйте, приступаем к тесту " + appConfig.getTitle() + "\n");
 
         for (int questionIdx = 0; questionIdx < questions.size(); questionIdx++) {
             Question question = questions.get(questionIdx);
-            processQuestion(questionIdx+1, question);
+            processQuestion(questionIdx + 1, question);
         }
         System.out.println("\n");
         return quizLogger;
