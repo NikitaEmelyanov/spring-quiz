@@ -1,5 +1,6 @@
 package ru.yandex.practicum.quiz.service;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.quiz.config.QuizConfig;
 import ru.yandex.practicum.quiz.model.Question;
@@ -13,14 +14,18 @@ public class ConsoleUI {
     private final Scanner input;
     private final QuizLog quizLogger;
     private final List<Question> questions;
+    private final String quizTitle;
 
-    public ConsoleUI(QuizConfig quizConfig) {
+    public ConsoleUI(@Value("${spring-quiz.title:\"Неназванный тест\"}") String title,
+        QuizConfig quizConfig) {
         this.questions = quizConfig.getQuestions();
         this.input = new Scanner(System.in);
         this.quizLogger = new QuizLog(questions.size());
+        this.quizTitle = title;
     }
+
     public QuizLog startQuiz() {
-        System.out.println("\nЗдравствуйте, приступаем к тесту \"Тест по Spring Framework\"!\n");
+        System.out.println("\nЗдравствуйте, приступаем к тесту " + quizTitle + "\n");
 
         for (int questionIdx = 0; questionIdx < questions.size(); questionIdx++) {
             Question question = questions.get(questionIdx);
@@ -29,8 +34,8 @@ public class ConsoleUI {
         System.out.println("\n");
         return quizLogger;
     }
-    private void processQuestion(int questionNumber, Question question) {
 
+    private void processQuestion(int questionNumber, Question question) {
         for(int attemptIdx = 0; attemptIdx < question.getAttempts(); attemptIdx++) {
             System.out.println("\n");
             askQuestion(questionNumber, question, attemptIdx);
@@ -49,7 +54,7 @@ public class ConsoleUI {
 
     private void askQuestion(int questionNumber, Question question, int attemptIdx) {
         System.out.printf("Вопрос %d (попытка: %d/%d): %s\n",
-                questionNumber, attemptIdx + 1, question.getAttempts(), question.getText());
+            questionNumber, attemptIdx + 1, question.getAttempts(), question.getText());
 
         for (int optionIdx = 0; optionIdx < question.getOptions().size(); optionIdx++) {
             String option = question.getOptions().get(optionIdx);
