@@ -1,3 +1,13 @@
+spring:
+  config:
+    import: "classpath:quiz/questions.yaml"
+  main:
+    log-startup-info: false
+    banner-mode: console
+  output:
+    ansi:
+      enabled: ALWAYS
+
 spring-quiz:
   title: "Тест по Spring Framework"
   report:

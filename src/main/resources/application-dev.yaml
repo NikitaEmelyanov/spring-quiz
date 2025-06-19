@@ -1,0 +1,8 @@
+spring:
+  main:
+    log-startup-info: true
+    banner-mode: off
+
+spring-quiz:
+  report:
+    mode: "concise"

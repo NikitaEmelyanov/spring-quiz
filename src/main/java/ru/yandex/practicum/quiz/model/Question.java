@@ -5,7 +5,8 @@ import lombok.Setter;
 
 import java.util.List;
 
-@Getter @Setter
+@Getter
+@Setter
 public class Question {
     private String text;
     private List<String> options;
@@ -13,9 +14,9 @@ public class Question {
     private Integer attempts;
 
     public Question(String text, List<String> options, int correctAnswerNumber, Integer attempts) {
-        if(correctAnswerNumber < 1 || correctAnswerNumber > options.size()) {
+        if (correctAnswerNumber < 1 || correctAnswerNumber > options.size()) {
             throw new IllegalArgumentException("Номер правильного ответа: " + correctAnswerNumber
-                    + ", всего вариантов: " + options.size());
+                                               + ", всего вариантов: " + options.size());
         }
         this.text = text;
         this.options = options;
