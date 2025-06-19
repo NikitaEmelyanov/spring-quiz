@@ -6,3 +6,7 @@ spring:
 spring-quiz:
   report:
     mode: "concise"
+logging:
+  level:
+    ru.yandex.practicum.quiz: INFO
+    root: WARN

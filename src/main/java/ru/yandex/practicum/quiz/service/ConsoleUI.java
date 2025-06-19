@@ -1,6 +1,8 @@
 package ru.yandex.practicum.quiz.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.quiz.config.AppConfig;
 import ru.yandex.practicum.quiz.config.QuizConfig;
@@ -10,43 +12,50 @@ import ru.yandex.practicum.quiz.model.QuizLog;
 import java.util.List;
 import java.util.Scanner;
 
+@Slf4j
 @Component
-@RequiredArgsConstructor
 public class ConsoleUI {
-    private final Scanner input = new Scanner(System.in);
-    private final QuizLog quizLogger = new QuizLog(20); // Достаточно большой размер
+    private final Scanner input;
+    private final QuizLog quizLogger;
     private final List<Question> questions;
-    private final AppConfig appConfig;
+    private final String quizTitle;
 
-    public ConsoleUI(AppConfig appConfig, QuizConfig quizConfig) {
-        this.appConfig = appConfig;
+    public ConsoleUI(@Value("${spring-quiz.title:\"Неназванный тест\"}") String title,
+        QuizConfig quizConfig) {
         this.questions = quizConfig.getQuestions();
+        this.input = new Scanner(System.in);
+        this.quizLogger = new QuizLog(questions.size());
+        this.quizTitle = title;
+        log.debug("Инициализирован ConsoleUI с {} вопросами", questions.size());
     }
 
     public QuizLog startQuiz() {
-        System.out.println("\nЗдравствуйте, приступаем к тесту " + appConfig.getTitle() + "\n");
+        log.info("Начинаем квиз: {}", quizTitle);
+        System.out.println("\nЗдравствуйте, приступаем к тесту " + quizTitle + "\n");
 
         for (int questionIdx = 0; questionIdx < questions.size(); questionIdx++) {
             Question question = questions.get(questionIdx);
-            processQuestion(questionIdx + 1, question);
+            processQuestion(questionIdx+1, question);
         }
-        System.out.println("\n");
+
+        log.debug("Квиз завершен, всего ответов: {}", quizLogger.total());
         return quizLogger;
     }
 
     private void processQuestion(int questionNumber, Question question) {
-        for(int attemptIdx = 0; attemptIdx < question.getAttempts(); attemptIdx++) {
-            System.out.println("\n");
-            askQuestion(questionNumber, question, attemptIdx);
+        log.trace("Обработка вопроса №{}", questionNumber);
 
+        for(int attemptIdx = 0; attemptIdx < question.getAttempts(); attemptIdx++) {
+            askQuestion(questionNumber, question, attemptIdx);
             int answerNumber = getAnswer(questionNumber, question);
 
             if (question.getCorrectAnswerNumber() == answerNumber) {
+                log.debug("Правильный ответ на вопрос №{}", questionNumber);
                 break;
-            } else {
-                if(attemptIdx+1 < question.getAttempts()) {
-                    System.out.println("К сожалению ваш ответ неверный, но вы можете попробовать еще раз");
-                }
+            } else if(attemptIdx+1 < question.getAttempts()) {
+                log.debug("Неправильный ответ на вопрос №{}, осталось попыток: {}",
+                    questionNumber, question.getAttempts() - attemptIdx - 1);
+                System.out.println("К сожалению ваш ответ неверный, но вы можете попробовать еще раз");
             }
         }
     }

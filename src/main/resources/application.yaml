@@ -16,3 +16,7 @@ spring-quiz:
     output:
       mode: "console"
       path: "./quiz-result.txt"
+logging:
+  level:
+    ru.yandex.practicum.quiz: INFO
+    root: WARN

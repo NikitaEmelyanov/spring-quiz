@@ -1,6 +1,7 @@
 package ru.yandex.practicum.quiz.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.quiz.config.AppConfig;
 import ru.yandex.practicum.quiz.model.QuizLog;
@@ -12,26 +13,36 @@ import java.util.stream.Collectors;
 import static ru.yandex.practicum.quiz.config.AppConfig.ReportMode.VERBOSE;
 import static ru.yandex.practicum.quiz.config.AppConfig.ReportOutputMode.CONSOLE;
 
+@Slf4j
 @Component
-@RequiredArgsConstructor
 public class ReportGenerator {
     private final AppConfig appConfig;
 
+    public ReportGenerator(AppConfig appConfig) {
+        this.appConfig = appConfig;
+        log.debug("Инициализирован ReportGenerator с конфигурацией: {}", appConfig.getReport());
+    }
+
     public void generate(QuizLog quizLog) {
         if (!appConfig.getReport().isEnabled()) {
+            log.warn("Генерация отчета отключена в конфигурации");
             return;
         }
 
-        AppConfig.ReportOutputSettings outputSettings = appConfig.getReport().getOutput();
         try {
-            boolean isConsole = outputSettings.getMode() == CONSOLE;
+            boolean isConsole = appConfig.getReport().getOutput().getMode() == AppConfig.ReportOutputMode.CONSOLE;
+            String outputDest = isConsole ? "консоль" : "файл: " + appConfig.getReport().getOutput().getPath();
+
+            log.info("Генерация отчета в {}", outputDest);
+
             try (PrintWriter writer = isConsole ?
                 new PrintWriter(System.out) :
-                new PrintWriter(outputSettings.getPath())) {
+                new PrintWriter(appConfig.getReport().getOutput().getPath())) {
                 write(quizLog, writer);
             }
-        } catch (Exception exception) {
-            System.out.println("При генерации отчёта произошла ошибка: " + exception.getMessage());
+        } catch (Exception e) {
+            log.error("Ошибка при генерации отчета", e);
+            System.out.println("При генерации отчёта произошла ошибка: " + e.getMessage());
         }
     }
 
